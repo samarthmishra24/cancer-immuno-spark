@@ -83,8 +83,7 @@ def write_csv(df, output_path):
 def tokenize_corpus(df):
     """
     Clean + tokenize the abstract column, then remove stop words.
-    Mirrors the DA1 feasibility script's cleaning step (lowercase, strip
-    everything but letters/digits/hyphens/whitespace) but runs it through
+    Cleaning step (lowercase, strip everything but letters/digits/hyphens/whitespace) but runs it through
     Spark ML's Tokenizer/StopWordsRemover Estimators, matching the pattern
     already used for TF-IDF, rather than the feasibility script's manual
     regexp_replace + split.
@@ -126,11 +125,9 @@ def build_tfidf(df, vocab_size, min_df):
 def lda_sweep(tfidf_df, cv_model, k_values, max_terms_per_topic=10):
     """
     Fit LDA at each k in k_values. Spark MLlib's LDA exposes no topic
-    coherence metric, only logLikelihood/logPerplexity (this was flagged
-    as a known limitation in DA1, with gensim-based coherence scoring noted
-    as future work -- still true here). We report both, plus each topic's
+    coherence metric, only logLikelihood/logPerplexity. We report both, plus each topic's
     top terms, so a human can sanity-check interpretability manually
-    alongside the numeric scores, per the DA1 mitigation plan.
+    alongside the numeric scores.
 
     Returns a list of dicts: {k, log_likelihood, log_perplexity, topics}
     where topics is a list of (topic_id, [top terms]).
@@ -188,7 +185,7 @@ def run_kmeans(tfidf_df, k):
     L2-normalize the TF-IDF vectors first (Normalizer, p=2), since Spark's
     KMeans minimizes Euclidean distance by default and normalized Euclidean
     distance ranks the same as cosine similarity -- the appropriate metric
-    for text vectors (see DA1 Section 3 / the project guide).
+    for text vectors.
     """
     normalizer = Normalizer(inputCol="features", outputCol="norm_features", p=2.0)
     normalized = normalizer.transform(tfidf_df)
